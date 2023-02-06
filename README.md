@@ -330,6 +330,8 @@ For additional context, refer to some of these links.
 - [Route 53 Resolver DNS Firewall overview](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-dns-firewall-overview.html) - How Route 53 Resolver DNS Firewall works
 - [Amazon Route 53 pricing](https://aws.amazon.com/route53/pricing/) - Overview of Amazon Route 53 pricing including Route 53 Resolver DNS Firewall pricing
 - [Amazon Route 53 Resolver DNS Firewall significantly reduces service cost](https://aws.amazon.com/about-aws/whats-new/2022/03/amazon-route-53-resolver-dns-firewall-reduces-service-cost/) - Amazon Route 53 Resolver DNS Firewall service cost reduction announcement
+- [Configuring logging for DNS Firewall](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/firewall-resolver-query-logs-configuring.html) - How to configure logging for DNS Firewall
+- [AWS resources that you can send Resolver query logs to](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs-choosing-target-resource.html) - Overview of the AWS resources that you can send Resolver query logs to
 
 
 ## Help

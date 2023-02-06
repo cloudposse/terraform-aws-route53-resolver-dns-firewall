@@ -68,6 +68,12 @@ references:
   - name: "Amazon Route 53 Resolver DNS Firewall significantly reduces service cost"
     description: "Amazon Route 53 Resolver DNS Firewall service cost reduction announcement"
     url: "https://aws.amazon.com/about-aws/whats-new/2022/03/amazon-route-53-resolver-dns-firewall-reduces-service-cost/"
+  - name: "Configuring logging for DNS Firewall"
+    description: "How to configure logging for DNS Firewall"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/firewall-resolver-query-logs-configuring.html"
+  - name: "AWS resources that you can send Resolver query logs to"
+    description: "Overview of the AWS resources that you can send Resolver query logs to"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs-choosing-target-resource.html"
 
 
 # Short description of this project
