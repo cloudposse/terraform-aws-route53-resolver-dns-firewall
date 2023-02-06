@@ -1,3 +1,8 @@
+output "vpc_cidr" {
+  value       = module.vpc.vpc_cidr_block
+  description = "VPC ID"
+}
+
 output "query_log_config" {
   value       = module.route53_resolver_firewall.query_log_config
   description = "Route 53 Resolver query logging configuration"
