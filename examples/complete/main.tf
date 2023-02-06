@@ -17,7 +17,7 @@ module "s3_log_storage" {
   source  = "cloudposse/s3-log-storage/aws"
   version = "1.0.0"
 
-  enabled       = var.query_log_enabled
+  enabled       = module.this.enabled && var.query_log_enabled
   force_destroy = true
   attributes    = ["logs"]
 

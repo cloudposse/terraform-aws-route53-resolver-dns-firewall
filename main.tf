@@ -10,15 +10,18 @@ locals {
     for rule_group in var.rule_groups_config : rule_group.name => rule_group if local.enabled
   }
 
-  rules_list = [
+  rules_map = merge([
     for rule_group in var.rule_groups_config : {
-      for rule in rule_group.rules : rule.name => merge(rule, { rule_group_id = aws_route53_resolver_firewall_rule_group.default[rule_group.name].id }) if local.enabled
+      for rule in rule_group.rules : format("%s-%s", rule_group.name, rule.name) => (
+        merge(rule,
+          {
+            rule_group_id  = aws_route53_resolver_firewall_rule_group.default[rule_group.name].id
+            domain_list_id = aws_route53_resolver_firewall_domain_list.default[rule.firewall_domain_list_name].id
+          }
+        )
+      ) if local.enabled
     }
-  ]
-
-  rules_map = {
-    for rule in local.rules_list : rule.name => rule if local.enabled
-  }
+  ]...)
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_config
@@ -61,12 +64,11 @@ resource "aws_route53_resolver_firewall_rule_group_association" "default" {
 resource "aws_route53_resolver_firewall_rule" "default" {
   for_each = local.rules_map
 
-  name     = each.value.name
-  action   = each.value.action
-  priority = each.value.priority
-
+  name                    = each.value.name
+  action                  = each.value.action
+  priority                = each.value.priority
   firewall_rule_group_id  = each.value.rule_group_id
-  firewall_domain_list_id = aws_route53_resolver_firewall_domain_list.default[each.value.firewall_domain_list_name].id
+  firewall_domain_list_id = each.value.domain_list_id
 
   block_override_dns_type = lookup(each.value, "block_override_dns_type", null)
   block_override_domain   = lookup(each.value, "block_override_domain", null)

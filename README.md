@@ -182,7 +182,7 @@ module "route53_resolver_firewall" {
           action                    = "ALERT"
         },
         {
-          name                      = "block-and -override-dangerous-domains"
+          name                      = "block-and-override-dangerous-domains"
           priority                  = 2
           firewall_domain_list_name = "dangerous-domains"
           action                    = "BLOCK"
