@@ -43,13 +43,13 @@ domains_config = [
 rule_groups_config = [
   {
     name = "not-secure-domains-rule-group"
-    # `priority` must be between 100 and 9900
-    priority = 100
+    # 'priority' must be between 100 and 9900
+    priority = 101
     rules = [
       {
         name = "block-not-secure-domains"
-        # `priority` must be between 100 and 9900
-        priority                  = 100
+        # 'priority' must be between 100 and 9900
+        priority                  = 101
         firewall_domain_list_name = "not-secure-domains"
         action                    = "BLOCK"
         block_response            = "NXDOMAIN"
@@ -58,19 +58,19 @@ rule_groups_config = [
   },
   {
     name = "alert-and-dangerous-domains-rule-group"
-    # `priority` must be between 100 and 9900
+    # 'priority' must be between 100 and 9900
     priority = 200
     rules = [
       {
         name = "alert-domains"
-        # `priority` must be between 100 and 9900
-        priority                  = 100
+        # 'priority' must be between 100 and 9900
+        priority                  = 101
         firewall_domain_list_name = "alert-domains"
         action                    = "ALERT"
       },
       {
         name = "block-and-override-dangerous-domains"
-        # `priority` must be between 100 and 9900
+        # 'priority' must be between 100 and 9900
         priority                  = 200
         firewall_domain_list_name = "dangerous-domains"
         action                    = "BLOCK"
