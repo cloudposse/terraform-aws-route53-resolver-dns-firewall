@@ -12,12 +12,12 @@ locals {
 
   rules_list = [
     for rule_group in var.rule_groups_config : {
-      for rule in rule_group.rules : rule.name => merge(rule, { rule_group_id = aws_route53_resolver_firewall_rule_group.default[rule_group.name].id })
+      for rule in rule_group.rules : rule.name => merge(rule, { rule_group_id = aws_route53_resolver_firewall_rule_group.default[rule_group.name].id }) if local.enabled
     }
   ]
 
   rules_map = {
-    for rule in local.rules_list : rule.name => rule
+    for rule in local.rules_list : rule.name => rule if local.enabled
   }
 }
 
