@@ -91,28 +91,16 @@ usage: |2-
     # version     = "x.x.x"
 
     ipv4_primary_cidr_block = "172.19.0.0/16"
-
-    context = module.this.context
-  }
-
-  module "subnets" {
-    source  = "cloudposse/dynamic-subnets/aws"
-    # Cloud Posse recommends pinning every module to a specific version
-    # version     = "x.x.x"
-
-    availability_zones   = var.availability_zones
-    vpc_id               = module.vpc.vpc_id
-    igw_id               = [module.vpc.igw_id]
-    ipv4_cidr_block      = [module.vpc.vpc_cidr_block]
-    nat_gateway_enabled  = false
-    nat_instance_enabled = false
+    dns_hostnames_enabled   = true
+    dns_support_enabled     = true
 
     context = module.this.context
   }
 
   module "s3_log_storage" {
     source  = "cloudposse/s3-log-storage/aws"
-    version = "1.0.0"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version     = "x.x.x"
 
     force_destroy = true
     attributes    = ["logs"]
@@ -120,79 +108,72 @@ usage: |2-
     context = module.this.context
   }
 
-  module "network_firewall" {
-    source  = "cloudposse/network-firewall/aws"
+  module "route53_resolver_firewall" {
     # Cloud Posse recommends pinning every module to a specific version
     # version     = "x.x.x"
 
-    vpc_id     = module.vpc.vpc_id
-    subnet_ids = module.subnets.private_subnet_ids
-
-    network_firewall_name                     = var.network_firewall_name
-    network_firewall_description              = var.network_firewall_description
-    network_firewall_policy_name              = var.network_firewall_policy_name
-    policy_stateful_engine_options_rule_order = var.policy_stateful_engine_options_rule_order
-    stateful_default_actions                  = var.stateful_default_actions
-    stateless_default_actions                 = var.stateless_default_actions
-    stateless_fragment_default_actions        = var.stateless_fragment_default_actions
-    stateless_custom_actions                  = var.stateless_custom_actions
-    delete_protection                         = var.delete_protection
-    firewall_policy_change_protection         = var.firewall_policy_change_protection
-    subnet_change_protection                  = var.subnet_change_protection
-
-    logging_config = {
-      flow = {
-        log_destination_type = "S3"
-        log_type             = "FLOW"
-        log_destination = {
-          bucketName = module.s3_log_storage.bucket_id
-          prefix     = "/flow"
-        }
+    vpc_id = module.vpc.vpc_id
+  
+    firewall_fail_open        = "ENABLED"
+    query_log_enabled         = true
+    query_log_destination_arn = module.s3_log_storage.bucket_arn
+  
+    domains_config = [
+      {
+        name = "not-secure-domains"
+        domains = [
+          "not-secure-domain-1.com",
+          "not-secure-domain-2.com",
+          "not-secure-domain-3.com"
+        ]
       },
-      alert = {
-        log_destination_type = "S3"
-        log_type             = "ALERT"
-        log_destination = {
-          bucketName = module.s3_log_storage.bucket_id
-          prefix     = "/alert"
-        }
+      {
+        name = "dangerous-domains"
+        domains = [
+          "dangerous-domain-1.com",
+          "dangerous-domain-2.com",
+          "dangerous-domain-3.com"
+        ]
       }
-    }
+    ]
 
-    rule_group_config = {
-      stateful-inspection-for-blocking-packets-from-going-to-destination = {
-        capacity    = 50
-        name        = "block-packets-from-reaching-destination"
-        description = "Stateful Inspection for blocking packets from going to an intended destination"
-        type        = "STATEFUL"
-        rule_group = {
-          stateful_rule_options = {
-            rule_order = "STRICT_ORDER"
+    rule_groups_config = [
+      {
+        name     = "not-secure-domains-rule-group"
+        priority = 1
+        rules = [
+          {
+            name                      = "block-not-secure-domains"
+            priority                  = 1
+            firewall_domain_list_name = "not-secure-domains"
+            action                    = "BLOCK"
+            block_response            = "NXDOMAIN"
           }
-          rules_source = {
-            stateful_rule = [
-              {
-                action = "DROP"
-                header = {
-                  destination      = "124.1.1.24/32"
-                  destination_port = 53
-                  direction        = "ANY"
-                  protocol         = "TCP"
-                  source           = "1.2.3.4/32"
-                  source_port      = 53
-                }
-                rule_option = [
-                  {
-                    keyword  = "sid"
-                    settings = ["1"]
-                  }
-                ]
-              }
-            ]
+        ]
+      },
+      {
+        name     = "dangerous-domains-rule-group"
+        priority = 2
+        rules = [
+          {
+            name                      = "alert-dangerous-domains"
+            priority                  = 1
+            firewall_domain_list_name = "dangerous-domains"
+            action                    = "ALERT"
+          },
+          {
+            name                      = "block-and -override-dangerous-domains"
+            priority                  = 2
+            firewall_domain_list_name = "dangerous-domains"
+            action                    = "BLOCK"
+            block_response            = "OVERRIDE"
+            block_override_dns_type   = "CNAME"
+            block_override_domain     = "go-here.com"
+            block_override_ttl        = 1
           }
-        }
+        ]
       }
-    }
+    ]
 
     context = module.this.context
   }

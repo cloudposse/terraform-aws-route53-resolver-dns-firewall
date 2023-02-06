@@ -7,6 +7,8 @@ module "vpc" {
   version = "2.0.0"
 
   ipv4_primary_cidr_block = "172.19.0.0/16"
+  dns_hostnames_enabled   = true
+  dns_support_enabled     = true
 
   context = module.this.context
 }
@@ -32,8 +34,8 @@ module "route53_resolver_firewall" {
   query_log_config_name     = var.query_log_config_name
   query_log_destination_arn = module.s3_log_storage.bucket_arn
 
-  domain_lists = var.domain_lists
-  rule_groups  = var.rule_groups
+  domains_config     = var.domains_config
+  rule_groups_config = var.rule_groups_config
 
   context = module.this.context
 }

@@ -3,9 +3,9 @@ output "query_log_config" {
   description = "Route 53 Resolver query logging configuration"
 }
 
-output "domain_lists" {
-  value       = module.route53_resolver_firewall.domain_lists
-  description = "Route 53 Resolver DNS Firewall domain lists"
+output "domains" {
+  value       = module.route53_resolver_firewall.domains
+  description = "Route 53 Resolver DNS Firewall domain configurations"
 }
 
 output "rule_groups" {

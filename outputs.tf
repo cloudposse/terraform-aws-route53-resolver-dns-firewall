@@ -3,9 +3,9 @@ output "query_log_config" {
   description = "Route 53 Resolver query logging configuration"
 }
 
-output "domain_lists" {
+output "domains" {
   value       = aws_route53_resolver_firewall_domain_list.default
-  description = "Route 53 Resolver DNS Firewall domain lists"
+  description = "Route 53 Resolver DNS Firewall domain configurations"
 }
 
 output "rule_groups" {
