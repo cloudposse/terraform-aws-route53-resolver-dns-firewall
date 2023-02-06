@@ -40,6 +40,7 @@ badges:
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
+
 related:
   - name: "terraform-aws-vpc"
     description: "Terraform Module that defines a VPC with public/private subnets across multiple AZs with Internet Gateways"
