@@ -169,12 +169,12 @@ module "route53_resolver_firewall" {
     {
       name = "not-secure-domains-rule-group"
       # 'priority' must be between 100 and 9900
-      priority = 100
+      priority = 101
       rules = [
         {
           name = "block-not-secure-domains"
           # 'priority' must be between 100 and 9900
-          priority                  = 100
+          priority                  = 101
           firewall_domain_list_name = "not-secure-domains"
           action                    = "BLOCK"
           block_response            = "NXDOMAIN"
@@ -189,7 +189,7 @@ module "route53_resolver_firewall" {
         {
           name = "alert-domains"
           # 'priority' must be between 100 and 9900
-          priority                  = 100
+          priority                  = 101
           firewall_domain_list_name = "alert-domains"
           action                    = "ALERT"
         },
