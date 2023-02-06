@@ -14,7 +14,6 @@ func TestExamplesComplete(t *testing.T) {
 	t.Parallel()
 	randID := strings.ToLower(random.UniqueId())
 	attributes := []string{randID}
-	testNamePrefix := "eg-test-network-firewall-" + randID
 
 	rootFolder := "../../"
 	terraformFolderRelativeToRoot := "examples/complete"
@@ -46,24 +45,9 @@ func TestExamplesComplete(t *testing.T) {
 	assert.Equal(t, "172.19.0.0/16", vpcCidr)
 
 	// Run `terraform output` to get the value of an output variable
-	privateSubnetCidrs := terraform.OutputList(t, terraformOptions, "private_subnet_cidrs")
+	domains := terraform.OutputMap(t, terraformOptions, "domains")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, []string{"172.19.0.0/19", "172.19.32.0/19"}, privateSubnetCidrs)
-
-	// Run `terraform output` to get the value of an output variable
-	publicSubnetCidrs := terraform.OutputList(t, terraformOptions, "public_subnet_cidrs")
-	// Verify we're getting back the outputs we expect
-	assert.Equal(t, []string{"172.19.96.0/19", "172.19.128.0/19"}, publicSubnetCidrs)
-
-	// Run `terraform output` to get the value of an output variable
-	networkFirewallName := terraform.Output(t, terraformOptions, "network_firewall_name")
-	// Verify we're getting back the outputs we expect
-	assert.Equal(t, testNamePrefix, networkFirewallName)
-
-	// Run `terraform output` to get the value of an output variable
-	networkFirewallPolicyName := terraform.Output(t, terraformOptions, "network_firewall_policy_name")
-	// Verify we're getting back the outputs we expect
-	assert.Equal(t, testNamePrefix, networkFirewallPolicyName)
+	assert.Equal(t, 2, len(domains))
 }
 
 func TestExamplesCompleteDisabled(t *testing.T) {
