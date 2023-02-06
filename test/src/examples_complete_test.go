@@ -47,7 +47,17 @@ func TestExamplesComplete(t *testing.T) {
 	// Run `terraform output` to get the value of an output variable
 	domains := terraform.OutputMap(t, terraformOptions, "domains")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, 2, len(domains))
+	assert.Equal(t, 3, len(domains))
+
+	// Run `terraform output` to get the value of an output variable
+	ruleGroups := terraform.OutputMap(t, terraformOptions, "rule_groups")
+	// Verify we're getting back the outputs we expect
+	assert.Equal(t, 2, len(ruleGroups))
+
+	// Run `terraform output` to get the value of an output variable
+	rules := terraform.OutputMap(t, terraformOptions, "rules")
+	// Verify we're getting back the outputs we expect
+	assert.Equal(t, 2, len(rules))
 }
 
 func TestExamplesCompleteDisabled(t *testing.T) {
