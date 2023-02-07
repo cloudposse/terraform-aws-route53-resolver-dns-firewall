@@ -28,13 +28,15 @@ domains_config = {
       "alert-domain-3.com"
     ]
   },
-  "dangerous-domains" = {
-    name = "dangerous-domains"
+  "blacklisted-domains" = {
+    name = "blacklisted-domains"
+    # Concat the lists of domains passed in the `domains` field and loaded from the file `domains_file`
     domains = [
-      "dangerous-domain-1.com",
-      "dangerous-domain-2.com",
-      "dangerous-domain-3.com"
+      "blacklisted-domain-1.com",
+      "blacklisted-domain-2.com",
+      "blacklisted-domain-3.com"
     ]
+    domains_file = "config/blacklisted_domains.txt"
   }
 }
 
@@ -56,8 +58,8 @@ rule_groups_config = {
       }
     }
   },
-  "alert-and-dangerous-domains-rule-group" = {
-    name = "alert-and-dangerous-domains-rule-group"
+  "alert-and-blacklisted-domains-rule-group" = {
+    name = "alert-and-blacklisted-domains-rule-group"
     # 'priority' must be between 100 and 9900 exclusive
     priority = 200
     rules = {
@@ -68,11 +70,11 @@ rule_groups_config = {
         firewall_domain_list_name = "alert-domains"
         action                    = "ALERT"
       },
-      "block-and-override-dangerous-domains" = {
-        name = "block-and-override-dangerous-domains"
+      "block-and-override-blacklisted-domains" = {
+        name = "block-and-override-blacklisted-domains"
         # 'priority' must be between 100 and 9900 exclusive
         priority                  = 200
-        firewall_domain_list_name = "dangerous-domains"
+        firewall_domain_list_name = "blacklisted-domains"
         action                    = "BLOCK"
         block_response            = "OVERRIDE"
         block_override_dns_type   = "CNAME"

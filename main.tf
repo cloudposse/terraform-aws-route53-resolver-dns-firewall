@@ -28,9 +28,15 @@ resource "aws_route53_resolver_firewall_config" "default" {
 resource "aws_route53_resolver_firewall_domain_list" "default" {
   for_each = local.enabled ? var.domains_config : {}
 
-  name    = format("%s-%s", each.value.name, var.vpc_id)
-  domains = each.value.domains
-  tags    = module.this.tags
+  name = format("%s-%s", each.value.name, var.vpc_id)
+
+  # Concat the lists of domains passed in the `domains` field and loaded from the file `domains_file`
+  domains = distinct(compact(concat(
+    lookup(each.value, "domains", null) != null ? each.value.domains : [],
+    (lookup(each.value, "domains_file", "") != "" && lookup(each.value, "domains_file", null) != null) ? split("\n", file(each.value.domains_file)) : []
+  )))
+
+  tags = module.this.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group
