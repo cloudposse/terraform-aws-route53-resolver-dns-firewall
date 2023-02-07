@@ -28,7 +28,7 @@ resource "aws_route53_resolver_firewall_config" "default" {
 resource "aws_route53_resolver_firewall_domain_list" "default" {
   for_each = local.enabled ? var.domains_config : {}
 
-  name    = each.value.name
+  name    = format("%s-%s", each.value.name, var.vpc_id)
   domains = each.value.domains
   tags    = module.this.tags
 }
@@ -37,7 +37,7 @@ resource "aws_route53_resolver_firewall_domain_list" "default" {
 resource "aws_route53_resolver_firewall_rule_group" "default" {
   for_each = local.enabled ? var.rule_groups_config : {}
 
-  name = each.value.name
+  name = format("%s-%s", each.value.name, var.vpc_id)
   tags = module.this.tags
 }
 
@@ -45,7 +45,7 @@ resource "aws_route53_resolver_firewall_rule_group" "default" {
 resource "aws_route53_resolver_firewall_rule_group_association" "default" {
   for_each = local.enabled ? var.rule_groups_config : {}
 
-  name                   = each.value.name
+  name                   = format("%s-%s", each.value.name, var.vpc_id)
   priority               = each.value.priority
   firewall_rule_group_id = aws_route53_resolver_firewall_rule_group.default[each.key].id
   vpc_id                 = var.vpc_id
@@ -56,7 +56,7 @@ resource "aws_route53_resolver_firewall_rule_group_association" "default" {
 resource "aws_route53_resolver_firewall_rule" "default" {
   for_each = local.rules_map
 
-  name                    = each.value.name
+  name                    = format("%s-%s", each.value.name, var.vpc_id)
   action                  = each.value.action
   priority                = each.value.priority
   firewall_rule_group_id  = each.value.rule_group_id
