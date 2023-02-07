@@ -4,9 +4,10 @@ locals {
 
   rules_map = merge([
     for rule_group_name, rule_group in var.rule_groups_config : {
-      for rule in rule_group.rules : format("%s-%s", rule_group.name, rule.name) => (
+      for rule_name, rule in rule_group.rules : format("%s-%s", rule_group_name, rule_name) => (
         merge(rule,
           {
+            rule_name      = rule_name
             rule_group_id  = aws_route53_resolver_firewall_rule_group.default[rule_group_name].id
             domain_list_id = aws_route53_resolver_firewall_domain_list.default[rule.firewall_domain_list_name].id
           }
@@ -28,7 +29,7 @@ resource "aws_route53_resolver_firewall_config" "default" {
 resource "aws_route53_resolver_firewall_domain_list" "default" {
   for_each = local.enabled ? var.domains_config : {}
 
-  name = format("%s-%s", each.value.name, var.vpc_id)
+  name = format("%s-%s", each.key, var.vpc_id)
 
   # Concat the lists of domains passed in the `domains` field and loaded from the file `domains_file`
   domains = distinct(compact(concat(
@@ -43,7 +44,7 @@ resource "aws_route53_resolver_firewall_domain_list" "default" {
 resource "aws_route53_resolver_firewall_rule_group" "default" {
   for_each = local.enabled ? var.rule_groups_config : {}
 
-  name = format("%s-%s", each.value.name, var.vpc_id)
+  name = format("%s-%s", each.key, var.vpc_id)
   tags = module.this.tags
 }
 
@@ -51,7 +52,7 @@ resource "aws_route53_resolver_firewall_rule_group" "default" {
 resource "aws_route53_resolver_firewall_rule_group_association" "default" {
   for_each = local.enabled ? var.rule_groups_config : {}
 
-  name                   = format("%s-%s", each.value.name, var.vpc_id)
+  name                   = format("%s-%s", each.key, var.vpc_id)
   priority               = each.value.priority
   firewall_rule_group_id = aws_route53_resolver_firewall_rule_group.default[each.key].id
   vpc_id                 = var.vpc_id
@@ -62,7 +63,7 @@ resource "aws_route53_resolver_firewall_rule_group_association" "default" {
 resource "aws_route53_resolver_firewall_rule" "default" {
   for_each = local.rules_map
 
-  name                    = format("%s-%s", each.value.name, var.vpc_id)
+  name                    = format("%s-%s", each.value.rule_name, var.vpc_id)
   action                  = each.value.action
   priority                = each.value.priority
   firewall_rule_group_id  = each.value.rule_group_id

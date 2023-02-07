@@ -31,7 +31,6 @@ variable "query_log_config_name" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_domain_list
 variable "domains_config" {
   type = map(object({
-    name         = string
     domains      = optional(list(string))
     domains_file = optional(string)
   }))
@@ -41,12 +40,10 @@ variable "domains_config" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group
 variable "rule_groups_config" {
   type = map(object({
-    name                = string
     priority            = number
     mutation_protection = optional(string)
     # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule
     rules = map(object({
-      name                      = string
       action                    = string
       priority                  = number
       block_override_dns_type   = optional(string)
