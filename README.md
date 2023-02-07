@@ -30,7 +30,7 @@
 
 -->
 
-Terraform module to provision Route 53 Resolver DNS Firewall, firewall rules and rule groups.
+Terraform module to provision Route 53 Resolver DNS Firewall, domain lists, firewall rules, rule groups, and logging configurations.
 
 ---
 
