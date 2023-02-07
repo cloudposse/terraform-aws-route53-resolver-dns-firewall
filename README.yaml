@@ -1,0 +1,217 @@
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: terraform-aws-route53-resolver-dns-firewall
+# Tags of this project
+tags:
+  - aws
+  - terraform
+  - terraform-modules
+  - networking
+  - network
+  - dns
+  - firewall
+  - dns-firewall
+  - firewall-rules
+  - vpc
+
+# Categories of this project
+categories:
+  - terraform-modules/networking
+  - terraform-modules/firewall
+
+# Logo for this project
+#logo: docs/logo.png
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: cloudposse/terraform-aws-route53-resolver-dns-firewall
+
+# Badges to display
+badges:
+  - name: "Latest Release"
+    image: "https://img.shields.io/github/release/cloudposse/terraform-aws-route53-resolver-dns-firewall.svg"
+    url: "https://github.com/cloudposse/terraform-aws-route53-resolver-dns-firewall/releases/latest"
+  - name: "Slack Community"
+    image: "https://slack.cloudposse.com/badge.svg"
+    url: "https://slack.cloudposse.com"
+
+related:
+  - name: "terraform-aws-vpc"
+    description: "Terraform Module that defines a VPC with public/private subnets across multiple AZs with Internet Gateways"
+    url: "https://github.com/cloudposse/terraform-aws-vpc"
+  - name: "terraform-aws-dynamic-subnets"
+    description: "Terraform module for public and private subnets provisioning in existing VPC"
+    url: "https://github.com/cloudposse/terraform-aws-dynamic-subnets"
+  - name: "terraform-aws-named-subnets"
+    description: "Terraform module for named subnets provisioning."
+    url: "https://github.com/cloudposse/terraform-aws-named-subnets"
+  - name: "terraform-aws-vpc-peering"
+    description: "Terraform module to create a peering connection between two VPCs"
+    url: "https://github.com/cloudposse/terraform-aws-vpc-peering"
+  - name: "terraform-aws-network-firewall"
+    description: "Terraform module to provision and manage AWS Network Firewall resources"
+    url: "https://github.com/cloudposse/terraform-aws-network-firewall"
+
+references:
+  - name: "Route 53 Resolver DNS Firewall overview"
+    description: "How Route 53 Resolver DNS Firewall works"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-dns-firewall-overview.html"
+  - name: "Amazon Route 53 pricing"
+    description: "Overview of Amazon Route 53 pricing including Route 53 Resolver DNS Firewall pricing"
+    url: "https://aws.amazon.com/route53/pricing/"
+  - name: "Amazon Route 53 Resolver DNS Firewall significantly reduces service cost"
+    description: "Amazon Route 53 Resolver DNS Firewall service cost reduction announcement"
+    url: "https://aws.amazon.com/about-aws/whats-new/2022/03/amazon-route-53-resolver-dns-firewall-reduces-service-cost/"
+  - name: "Configuring logging for DNS Firewall"
+    description: "How to configure logging for DNS Firewall"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/firewall-resolver-query-logs-configuring.html"
+  - name: "AWS resources that you can send Resolver query logs to"
+    description: "Overview of the AWS resources that you can send Resolver query logs to"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs-choosing-target-resource.html"
+
+
+# Short description of this project
+description: |-
+  Terraform module to provision Route 53 Resolver DNS Firewall, domain lists, firewall rules, rule groups, and logging configurations.
+
+# How to use this project
+usage: |2-
+
+  For a complete example, see [examples/complete](examples/complete)
+
+  For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
+
+  ```hcl
+  provider "aws" {
+    region = var.region
+  }
+
+  module "vpc" {
+    source  = "cloudposse/vpc/aws"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version     = "x.x.x"
+
+    ipv4_primary_cidr_block                   = "172.19.0.0/16"
+    dns_hostnames_enabled                     = true
+    dns_support_enabled                       = true
+    internet_gateway_enabled                  = false
+    ipv6_egress_only_internet_gateway_enabled = false
+    assign_generated_ipv6_cidr_block          = false
+
+    context = module.this.context
+  }
+
+  module "s3_log_storage" {
+    source  = "cloudposse/s3-log-storage/aws"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version     = "x.x.x"
+
+    force_destroy = true
+    attributes    = ["logs"]
+
+    context = module.this.context
+  }
+
+  module "route53_resolver_firewall" {
+    # Cloud Posse recommends pinning every module to a specific version
+    # version     = "x.x.x"
+
+    vpc_id = module.vpc.vpc_id
+
+    firewall_fail_open        = "ENABLED"
+    query_log_enabled         = true
+    query_log_destination_arn = module.s3_log_storage.bucket_arn
+
+    domains_config = {
+      "not-secure-domains" = {
+        domains = [
+          "not-secure-domain-1.com",
+          "not-secure-domain-2.com",
+          "not-secure-domain-3.com"
+        ]
+      },
+      "alert-domains" = {
+        domains = [
+          "alert-domain-1.com",
+          "alert-domain-2.com",
+          "alert-domain-3.com"
+        ]
+      },
+      "blacklisted-domains" = {
+        # Concat the lists of domains passed in the `domains` field and loaded from the file `domains_file`
+        domains = [
+          "blacklisted-domain-1.com",
+          "blacklisted-domain-2.com",
+          "blacklisted-domain-3.com"
+        ]
+        domains_file = "config/blacklisted_domains.txt"
+      }
+    }
+
+    rule_groups_config = {
+      "not-secure-domains-rule-group" = {
+        # 'priority' must be between 100 and 9900 exclusive
+        priority = 101
+        rules = {
+          "block-not-secure-domains" = {
+            # 'priority' must be between 100 and 9900 exclusive
+            priority                  = 101
+            firewall_domain_list_name = "not-secure-domains"
+            action                    = "BLOCK"
+            block_response            = "NXDOMAIN"
+          }
+        }
+      },
+      "alert-and-blacklisted-domains-rule-group" = {
+        # 'priority' must be between 100 and 9900 exclusive
+        priority = 200
+        rules = {
+          "alert-domains" = {
+            # 'priority' must be between 100 and 9900 exclusive
+            priority                  = 101
+            firewall_domain_list_name = "alert-domains"
+            action                    = "ALERT"
+          },
+          "block-and-override-blacklisted-domains" = {
+            # 'priority' must be between 100 and 9900 exclusive
+            priority                  = 200
+            firewall_domain_list_name = "blacklisted-domains"
+            action                    = "BLOCK"
+            block_response            = "OVERRIDE"
+            block_override_dns_type   = "CNAME"
+            block_override_domain     = "go-here.com"
+            block_override_ttl        = 1
+          }
+        }
+      }
+    }
+
+    context = module.this.context
+  }
+  ```
+
+# Example usage
+#examples: |-
+#  Example goes here...
+
+# How to get started quickly
+#quickstart: |-
+#  Here's how to get started...
+
+# Other files to include in this README from the project folder
+include:
+  - "docs/targets.md"
+  - "docs/terraform.md"
+
+# Contributors to this project
+contributors:
+  - name: "Erik Osterman"
+    github: "osterman"
+  - name: "Andriy Knysh"
+    github: "aknysh"
