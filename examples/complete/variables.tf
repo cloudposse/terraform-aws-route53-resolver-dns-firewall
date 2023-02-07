@@ -30,7 +30,7 @@ variable "query_log_config_name" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_domain_list
 variable "domains_config" {
-  type = list(object({
+  type = map(object({
     name    = string
     domains = list(string)
   }))
@@ -39,12 +39,12 @@ variable "domains_config" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group
 variable "rule_groups_config" {
-  type = list(object({
+  type = map(object({
     name                = string
     priority            = number
     mutation_protection = optional(string)
     # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule
-    rules = list(object({
+    rules = map(object({
       name                      = string
       action                    = string
       priority                  = number

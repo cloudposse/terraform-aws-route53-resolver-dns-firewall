@@ -97,9 +97,12 @@ usage: |2-
     # Cloud Posse recommends pinning every module to a specific version
     # version     = "x.x.x"
 
-    ipv4_primary_cidr_block = "172.19.0.0/16"
-    dns_hostnames_enabled   = true
-    dns_support_enabled     = true
+    ipv4_primary_cidr_block                   = "172.19.0.0/16"
+    dns_hostnames_enabled                     = true
+    dns_support_enabled                       = true
+    internet_gateway_enabled                  = false
+    ipv6_egress_only_internet_gateway_enabled = false
+    assign_generated_ipv6_cidr_block          = false
 
     context = module.this.context
   }
@@ -120,13 +123,13 @@ usage: |2-
     # version     = "x.x.x"
 
     vpc_id = module.vpc.vpc_id
-  
+
     firewall_fail_open        = "ENABLED"
     query_log_enabled         = true
     query_log_destination_arn = module.s3_log_storage.bucket_arn
-  
-    domains_config = [
-      {
+
+    domains_config = {
+      "not-secure-domains" = {
         name = "not-secure-domains"
         domains = [
           "not-secure-domain-1.com",
@@ -134,7 +137,7 @@ usage: |2-
           "not-secure-domain-3.com"
         ]
       },
-      {
+      "alert-domains" = {
         name = "alert-domains"
         domains = [
           "alert-domain-1.com",
@@ -142,7 +145,7 @@ usage: |2-
           "alert-domain-3.com"
         ]
       },
-      {
+      "dangerous-domains" = {
         name = "dangerous-domains"
         domains = [
           "dangerous-domain-1.com",
@@ -150,39 +153,39 @@ usage: |2-
           "dangerous-domain-3.com"
         ]
       }
-    ]
+    }
 
-    rule_groups_config = [
-      {
+    rule_groups_config = {
+      "not-secure-domains-rule-group" = {
         name = "not-secure-domains-rule-group"
-        # 'priority' must be between 100 and 9900
+        # 'priority' must be between 100 and 9900 exclusive
         priority = 101
-        rules = [
-          {
+        rules = {
+          "block-not-secure-domains" = {
             name = "block-not-secure-domains"
-            # 'priority' must be between 100 and 9900
+            # 'priority' must be between 100 and 9900 exclusive
             priority                  = 101
             firewall_domain_list_name = "not-secure-domains"
             action                    = "BLOCK"
             block_response            = "NXDOMAIN"
           }
-        ]
+        }
       },
-      {
+      "alert-and-dangerous-domains-rule-group" = {
         name = "alert-and-dangerous-domains-rule-group"
-        # 'priority' must be between 100 and 9900
+        # 'priority' must be between 100 and 9900 exclusive
         priority = 200
-        rules = [
-          {
+        rules = {
+          "alert-domains" = {
             name = "alert-domains"
-            # 'priority' must be between 100 and 9900
+            # 'priority' must be between 100 and 9900 exclusive
             priority                  = 101
             firewall_domain_list_name = "alert-domains"
             action                    = "ALERT"
           },
-          {
+          "block-and-override-dangerous-domains" = {
             name = "block-and-override-dangerous-domains"
-            # 'priority' must be between 100 and 9900
+            # 'priority' must be between 100 and 9900 exclusive
             priority                  = 200
             firewall_domain_list_name = "dangerous-domains"
             action                    = "BLOCK"
@@ -191,9 +194,9 @@ usage: |2-
             block_override_domain     = "go-here.com"
             block_override_ttl        = 1
           }
-        ]
+        }
       }
-    ]
+    }
 
     context = module.this.context
   }

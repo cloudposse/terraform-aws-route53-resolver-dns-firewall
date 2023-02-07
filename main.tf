@@ -2,20 +2,12 @@ locals {
   enabled           = module.this.enabled
   query_log_enabled = local.enabled && var.query_log_enabled
 
-  domains_config_map = {
-    for domain in var.domains_config : domain.name => domain if local.enabled
-  }
-
-  rule_groups_config_map = {
-    for rule_group in var.rule_groups_config : rule_group.name => rule_group if local.enabled
-  }
-
   rules_map = merge([
-    for rule_group in var.rule_groups_config : {
+    for rule_group_name, rule_group in var.rule_groups_config : {
       for rule in rule_group.rules : format("%s-%s", rule_group.name, rule.name) => (
         merge(rule,
           {
-            rule_group_id  = aws_route53_resolver_firewall_rule_group.default[rule_group.name].id
+            rule_group_id  = aws_route53_resolver_firewall_rule_group.default[rule_group_name].id
             domain_list_id = aws_route53_resolver_firewall_domain_list.default[rule.firewall_domain_list_name].id
           }
         )
@@ -34,7 +26,7 @@ resource "aws_route53_resolver_firewall_config" "default" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_domain_list
 resource "aws_route53_resolver_firewall_domain_list" "default" {
-  for_each = local.domains_config_map
+  for_each = local.enabled ? var.domains_config : {}
 
   name    = each.value.name
   domains = each.value.domains
@@ -43,7 +35,7 @@ resource "aws_route53_resolver_firewall_domain_list" "default" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group
 resource "aws_route53_resolver_firewall_rule_group" "default" {
-  for_each = local.rule_groups_config_map
+  for_each = local.enabled ? var.rule_groups_config : {}
 
   name = each.value.name
   tags = module.this.tags
@@ -51,11 +43,11 @@ resource "aws_route53_resolver_firewall_rule_group" "default" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group_association
 resource "aws_route53_resolver_firewall_rule_group_association" "default" {
-  for_each = local.rule_groups_config_map
+  for_each = local.enabled ? var.rule_groups_config : {}
 
   name                   = each.value.name
-  firewall_rule_group_id = aws_route53_resolver_firewall_rule_group.default[each.value.name].id
   priority               = each.value.priority
+  firewall_rule_group_id = aws_route53_resolver_firewall_rule_group.default[each.key].id
   vpc_id                 = var.vpc_id
   tags                   = module.this.tags
 }
