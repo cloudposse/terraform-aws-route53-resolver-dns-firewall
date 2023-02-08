@@ -130,25 +130,27 @@ usage: |2-
 
     domains_config = {
       "not-secure-domains" = {
+        # The dot at the end of domain names is required by Route53 DNS Firewall
+        # If not added, AWS adds it automatically and terraform shows permanent drift
         domains = [
-          "not-secure-domain-1.com",
-          "not-secure-domain-2.com",
-          "not-secure-domain-3.com"
+          "not-secure-domain-1.com.",
+          "not-secure-domain-2.com.",
+          "not-secure-domain-3.com."
         ]
       },
       "alert-domains" = {
         domains = [
-          "alert-domain-1.com",
-          "alert-domain-2.com",
-          "alert-domain-3.com"
+          "alert-domain-1.com.",
+          "alert-domain-2.com.",
+          "alert-domain-3.com."
         ]
       },
       "blacklisted-domains" = {
         # Concat the lists of domains passed in the `domains` field and loaded from the file `domains_file`
         domains = [
-          "blacklisted-domain-1.com",
-          "blacklisted-domain-2.com",
-          "blacklisted-domain-3.com"
+          "blacklisted-domain-1.com.",
+          "blacklisted-domain-2.com.",
+          "blacklisted-domain-3.com."
         ]
         domains_file = "config/blacklisted_domains.txt"
       }
