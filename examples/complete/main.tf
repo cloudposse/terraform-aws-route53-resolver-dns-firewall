@@ -6,7 +6,12 @@ module "vpc" {
   source  = "cloudposse/vpc/aws"
   version = "2.1.0"
 
-  ipv4_primary_cidr_block = var.vpc_cidr_block
+  ipv4_primary_cidr_block                   = "172.19.0.0/16"
+  dns_hostnames_enabled                     = true
+  dns_support_enabled                       = true
+  internet_gateway_enabled                  = false
+  ipv6_egress_only_internet_gateway_enabled = false
+  assign_generated_ipv6_cidr_block          = false
 
   context = module.this.context
 }
