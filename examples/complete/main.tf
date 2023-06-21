@@ -4,7 +4,7 @@ provider "aws" {
 
 module "vpc" {
   source  = "cloudposse/vpc/aws"
-  version = "2.0.0"
+  version = "2.1.0"
 
   ipv4_primary_cidr_block                   = "172.19.0.0/16"
   dns_hostnames_enabled                     = true
@@ -18,7 +18,7 @@ module "vpc" {
 
 module "s3_log_storage" {
   source  = "cloudposse/s3-log-storage/aws"
-  version = "1.0.0"
+  version = "1.4.1"
 
   enabled       = module.this.enabled && var.query_log_enabled
   force_destroy = true
