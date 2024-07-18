@@ -5,3 +5,4 @@ repository:
   description: Terraform module to provision Route 53 Resolver DNS Firewall, firewall rules and rule groups
   homepage: https://cloudposse.com/accelerate
   topics: dns, domain, firewall, firewall-rules, resolver, route53, route53-resolver
+
