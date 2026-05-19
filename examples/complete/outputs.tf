@@ -27,3 +27,8 @@ output "rules" {
   value       = module.route53_resolver_firewall.rules
   description = "Route 53 Resolver DNS Firewall rules"
 }
+
+output "external_domain_list_id" {
+  value       = one(aws_route53_resolver_firewall_domain_list.external[*].id)
+  description = "ID of the pre-existing domain list created outside the module to exercise the `firewall_domain_list_id` code path"
+}

@@ -46,18 +46,27 @@ func TestExamplesComplete(t *testing.T) {
 
 	// Run `terraform output` to get the value of an output variable
 	domains := terraform.OutputMap(t, terraformOptions, "domains")
-	// Verify we're getting back the outputs we expect
+	// Verify we're getting back the outputs we expect (created from `domains_config`,
+	// the externally-created list is not part of the module's `domains` output).
 	assert.Equal(t, 3, len(domains))
 
 	// Run `terraform output` to get the value of an output variable
 	ruleGroups := terraform.OutputMap(t, terraformOptions, "rule_groups")
-	// Verify we're getting back the outputs we expect
-	assert.Equal(t, 2, len(ruleGroups))
+	// Verify we're getting back the outputs we expect (2 from the var-file + 1
+	// added in main.tf to exercise `firewall_domain_list_id`).
+	assert.Equal(t, 3, len(ruleGroups))
 
 	// Run `terraform output` to get the value of an output variable
-	rules := terraform.OutputMap(t, terraformOptions, "rules")
-	// Verify we're getting back the outputs we expect
-	assert.Equal(t, 3, len(rules))
+	rules := terraform.OutputJson(t, terraformOptions, "rules")
+	// Verify we're getting back the outputs we expect (3 from the var-file + 1
+	// added in main.tf that references the pre-existing list by ID).
+	assert.Equal(t, 4, strings.Count(rules, "\"firewall_rule_group_id\""))
+
+	// Verify the new rule's `firewall_domain_list_id` matches the external list's ID,
+	// proving the `coalesce(rule.firewall_domain_list_id, try(...))` lookup path works.
+	externalDomainListID := terraform.Output(t, terraformOptions, "external_domain_list_id")
+	assert.NotEmpty(t, externalDomainListID)
+	assert.Contains(t, rules, externalDomainListID)
 }
 
 func TestExamplesCompleteDisabled(t *testing.T) {
