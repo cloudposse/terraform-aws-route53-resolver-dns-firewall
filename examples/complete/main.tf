@@ -16,13 +16,65 @@ module "vpc" {
   context = module.this.context
 }
 
+module "logs_bucket_label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  attributes      = ["logs"]
+  id_length_limit = 63
+
+  context = module.this.context
+}
+
+# Bucket policy granting Route 53 Resolver the permissions it needs to deliver
+# query logs to the S3 bucket. Without this, `aws_route53_resolver_query_log_config_association`
+# creation fails with `AccessDeniedException: [RSLVR-01605] Missing permission to log destination`.
+#
+# References:
+#   https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/firewall-resolver-query-logs-configuring.html
+#   https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs-choosing-target-resource.html
+data "aws_iam_policy_document" "route53_resolver_log_access" {
+  count = module.this.enabled && var.query_log_enabled ? 1 : 0
+
+  statement {
+    sid     = "Route53ResolverGetBucketAcl"
+    effect  = "Allow"
+    actions = ["s3:GetBucketAcl"]
+    resources = [
+      "arn:aws:s3:::${module.logs_bucket_label.id}",
+    ]
+    principals {
+      type        = "Service"
+      identifiers = ["route53resolver.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid     = "Route53ResolverPutObject"
+    effect  = "Allow"
+    actions = ["s3:PutObject"]
+    resources = [
+      "arn:aws:s3:::${module.logs_bucket_label.id}/AWSLogs/*",
+    ]
+    principals {
+      type        = "Service"
+      identifiers = ["route53resolver.amazonaws.com"]
+    }
+  }
+}
+
 module "s3_log_storage" {
   source  = "cloudposse/s3-log-storage/aws"
   version = "1.4.1"
 
   enabled       = module.this.enabled && var.query_log_enabled
+  bucket_name   = module.logs_bucket_label.id
   force_destroy = true
   attributes    = ["logs"]
+
+  source_policy_documents = compact([
+    try(data.aws_iam_policy_document.route53_resolver_log_access[0].json, "")
+  ])
 
   context = module.this.context
 }
