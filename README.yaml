@@ -195,6 +195,22 @@ usage: |2-
             block_override_ttl        = 1
           }
         }
+      },
+      # Reference an AWS Managed Domain List (or any pre-existing domain list) by ID via `firewall_domain_list_id`.
+      # AWS Managed Domain List IDs are unique per account/region. Look them up with:
+      #   aws route53resolver list-firewall-domain-lists --region <region> \
+      #     --query "FirewallDomainLists[?ManagedOwnerName=='Route 53 Resolver DNS Firewall'].{Name:Name,Id:Id}" \
+      #     --output table
+      "aws-managed-malicious-domains-rule-group" = {
+        priority = 300
+        rules = {
+          "block-malware" = {
+            priority                = 110
+            firewall_domain_list_id = "rslvr-fdl-xxxxxxxxxxxxxxxxx" # AWSManagedDomainsMalwareDomainList
+            action                  = "BLOCK"
+            block_response          = "NODATA"
+          }
+        }
       }
     }
 
