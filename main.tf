@@ -2,14 +2,24 @@ locals {
   enabled           = module.this.enabled
   query_log_enabled = local.enabled && var.query_log_enabled
 
+  # Map of custom domain list name -> ID for lists created by this module from `domains_config`.
+  custom_domain_list_ids = {
+    for k, v in aws_route53_resolver_firewall_domain_list.default : k => v.id
+  }
+
   rules_map = merge([
     for rule_group_name, rule_group in var.rule_groups_config : {
       for rule_name, rule in rule_group.rules : format("%s-%s", rule_group_name, rule_name) => (
         merge(rule,
           {
-            rule_name      = rule_name
-            rule_group_id  = aws_route53_resolver_firewall_rule_group.default[rule_group_name].id
-            domain_list_id = aws_route53_resolver_firewall_domain_list.default[rule.firewall_domain_list_name].id
+            rule_name     = rule_name
+            rule_group_id = aws_route53_resolver_firewall_rule_group.default[rule_group_name].id
+            # Use explicit `firewall_domain_list_id` if provided (for AWS Managed Domain Lists or other pre-existing lists),
+            # otherwise look up the ID from custom lists created by this module via `firewall_domain_list_name`.
+            domain_list_id = coalesce(
+              rule.firewall_domain_list_id,
+              try(local.custom_domain_list_ids[rule.firewall_domain_list_name], null)
+            )
           }
         )
       ) if local.enabled

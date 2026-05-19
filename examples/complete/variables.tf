@@ -50,8 +50,14 @@ variable "rule_groups_config" {
       block_override_domain     = optional(string)
       block_override_ttl        = optional(number)
       block_response            = optional(string)
-      firewall_domain_list_name = string
+      firewall_domain_list_name = optional(string)
+      firewall_domain_list_id   = optional(string)
     }))
   }))
-  description = "Rule groups and rules configuration"
+  description = <<-EOF
+    Rule groups and rules configuration.
+    Each rule must specify exactly one of:
+    - `firewall_domain_list_name` for custom lists defined in `domains_config`
+    - `firewall_domain_list_id` for AWS Managed Domain Lists or other pre-existing domain lists referenced by ID
+  EOF
 }
