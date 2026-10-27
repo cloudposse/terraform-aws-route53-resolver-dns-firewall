@@ -67,6 +67,9 @@ func TestExamplesComplete(t *testing.T) {
 	externalDomainListID := terraform.Output(t, terraformOptions, "external_domain_list_id")
 	assert.NotEmpty(t, externalDomainListID)
 	assert.Contains(t, rules, externalDomainListID)
+
+	// Verify `firewall_domain_redirection_action` reaches the rule set in the fixtures.
+	assert.Contains(t, rules, "TRUST_REDIRECTION_DOMAIN")
 }
 
 func TestExamplesCompleteDisabled(t *testing.T) {

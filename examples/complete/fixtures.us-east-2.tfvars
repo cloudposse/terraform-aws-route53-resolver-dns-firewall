@@ -68,6 +68,8 @@ rule_groups_config = {
         priority                  = 101
         firewall_domain_list_name = "alert-domains"
         action                    = "ALERT"
+        # Inspect only the queried domain, not the CNAME chain it resolves through
+        firewall_domain_redirection_action = "TRUST_REDIRECTION_DOMAIN"
       },
       "block-and-override-blacklisted-domains" = {
         # 'priority' must be between 100 and 9900 exclusive

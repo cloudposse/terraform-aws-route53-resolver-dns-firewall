@@ -61,6 +61,8 @@ variable "rule_groups_config" {
       block_response            = optional(string)
       firewall_domain_list_name = optional(string)
       firewall_domain_list_id   = optional(string)
+      # INSPECT_REDIRECTION_DOMAIN (AWS default) or TRUST_REDIRECTION_DOMAIN
+      firewall_domain_redirection_action = optional(string)
     }))
   }))
   description = <<-EOF
@@ -68,5 +70,18 @@ variable "rule_groups_config" {
     Each rule must specify exactly one of:
     - `firewall_domain_list_name` for custom lists defined in `domains_config` (created by this module)
     - `firewall_domain_list_id` for AWS Managed Domain Lists or other pre-existing domain lists referenced by ID
+    Optionally set `firewall_domain_redirection_action` to control how the rule evaluates a CNAME/DNAME chain:
+    `INSPECT_REDIRECTION_DOMAIN` (AWS default) inspects every domain in the chain;
+    `TRUST_REDIRECTION_DOMAIN` inspects only the first domain.
   EOF
+
+  validation {
+    condition = alltrue(flatten([
+      for rule_group in var.rule_groups_config : [
+        for rule in rule_group.rules :
+        rule.firewall_domain_redirection_action == null ? true : contains(["INSPECT_REDIRECTION_DOMAIN", "TRUST_REDIRECTION_DOMAIN"], rule.firewall_domain_redirection_action)
+      ]
+    ]))
+    error_message = "`firewall_domain_redirection_action` must be `INSPECT_REDIRECTION_DOMAIN` or `TRUST_REDIRECTION_DOMAIN`."
+  }
 }

@@ -83,6 +83,8 @@ resource "aws_route53_resolver_firewall_rule" "default" {
   block_override_domain   = lookup(each.value, "block_override_domain", null)
   block_override_ttl      = lookup(each.value, "block_override_ttl", null)
   block_response          = lookup(each.value, "block_response", null)
+
+  firewall_domain_redirection_action = lookup(each.value, "firewall_domain_redirection_action", null)
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_query_log_config
