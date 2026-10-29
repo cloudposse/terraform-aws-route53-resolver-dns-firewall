@@ -52,6 +52,8 @@ variable "rule_groups_config" {
       block_response            = optional(string)
       firewall_domain_list_name = optional(string)
       firewall_domain_list_id   = optional(string)
+      # INSPECT_REDIRECTION_DOMAIN (AWS default) or TRUST_REDIRECTION_DOMAIN
+      firewall_domain_redirection_action = optional(string)
     }))
   }))
   description = <<-EOF
