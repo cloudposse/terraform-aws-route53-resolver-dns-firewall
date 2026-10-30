@@ -63,6 +63,9 @@ variable "rule_groups_config" {
       firewall_domain_list_id   = optional(string)
       # INSPECT_REDIRECTION_DOMAIN (AWS default) or TRUST_REDIRECTION_DOMAIN
       firewall_domain_redirection_action = optional(string)
+      # DNS Firewall Advanced rules: DGA, DICTIONARY_DGA or DNS_TUNNELING, with LOW, MEDIUM or HIGH confidence
+      dns_threat_protection = optional(string)
+      confidence_threshold  = optional(string)
     }))
   }))
   description = <<-EOF
@@ -70,6 +73,9 @@ variable "rule_groups_config" {
     Each rule must specify exactly one of:
     - `firewall_domain_list_name` for custom lists defined in `domains_config` (created by this module)
     - `firewall_domain_list_id` for AWS Managed Domain Lists or other pre-existing domain lists referenced by ID
+    - `dns_threat_protection` together with `confidence_threshold` for a DNS Firewall Advanced rule
+      (`dns_threat_protection`: `DGA`, `DICTIONARY_DGA` or `DNS_TUNNELING`; `confidence_threshold`: `LOW`, `MEDIUM` or `HIGH`).
+      DNS Firewall Advanced rules take no domain list, and `ALLOW` is not a valid action for them.
     Optionally set `firewall_domain_redirection_action` to control how the rule evaluates a CNAME/DNAME chain:
     `INSPECT_REDIRECTION_DOMAIN` (AWS default) inspects every domain in the chain;
     `TRUST_REDIRECTION_DOMAIN` inspects only the first domain.
@@ -83,5 +89,27 @@ variable "rule_groups_config" {
       ]
     ]))
     error_message = "`firewall_domain_redirection_action` must be `INSPECT_REDIRECTION_DOMAIN` or `TRUST_REDIRECTION_DOMAIN`."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for rule_group in var.rule_groups_config : [
+        for rule in rule_group.rules :
+        (rule.dns_threat_protection == null ? true : contains(["DGA", "DICTIONARY_DGA", "DNS_TUNNELING"], rule.dns_threat_protection)) &&
+        (rule.confidence_threshold == null ? true : contains(["LOW", "MEDIUM", "HIGH"], rule.confidence_threshold)) &&
+        ((rule.dns_threat_protection == null) == (rule.confidence_threshold == null))
+      ]
+    ]))
+    error_message = "DNS Firewall Advanced rules must set both `dns_threat_protection` (`DGA`, `DICTIONARY_DGA` or `DNS_TUNNELING`) and `confidence_threshold` (`LOW`, `MEDIUM` or `HIGH`)."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for rule_group in var.rule_groups_config : [
+        for rule in rule_group.rules :
+        rule.dns_threat_protection == null || (rule.firewall_domain_list_name == null && rule.firewall_domain_list_id == null)
+      ]
+    ]))
+    error_message = "A rule with `dns_threat_protection` cannot also set `firewall_domain_list_name` or `firewall_domain_list_id`."
   }
 }

@@ -58,9 +58,9 @@ func TestExamplesComplete(t *testing.T) {
 
 	// Run `terraform output` to get the value of an output variable
 	rules := terraform.OutputJson(t, terraformOptions, "rules")
-	// Verify we're getting back the outputs we expect (3 from the var-file + 1
+	// Verify we're getting back the outputs we expect (4 from the var-file + 1
 	// added in main.tf that references the pre-existing list by ID).
-	assert.Equal(t, 4, strings.Count(rules, "\"firewall_rule_group_id\""))
+	assert.Equal(t, 5, strings.Count(rules, "\"firewall_rule_group_id\""))
 
 	// Verify the new rule's `firewall_domain_list_id` matches the external list's ID,
 	// proving the `coalesce(rule.firewall_domain_list_id, try(...))` lookup path works.
@@ -70,6 +70,9 @@ func TestExamplesComplete(t *testing.T) {
 
 	// Verify `firewall_domain_redirection_action` reaches the rule set in the fixtures.
 	assert.Contains(t, rules, "TRUST_REDIRECTION_DOMAIN")
+
+	// Verify the DNS Firewall Advanced rule in the fixtures is created without a domain list.
+	assert.Contains(t, rules, "DNS_TUNNELING")
 }
 
 func TestExamplesCompleteDisabled(t *testing.T) {
