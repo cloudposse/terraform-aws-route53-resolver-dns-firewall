@@ -16,7 +16,8 @@ locals {
             rule_group_id = aws_route53_resolver_firewall_rule_group.default[rule_group_name].id
             # Use explicit `firewall_domain_list_id` if provided (for AWS Managed Domain Lists or other pre-existing lists),
             # otherwise look up the ID from custom lists created by this module via `firewall_domain_list_name`.
-            domain_list_id = coalesce(
+            # DNS Firewall Advanced rules (`dns_threat_protection`) take no domain list.
+            domain_list_id = rule.dns_threat_protection != null ? null : coalesce(
               rule.firewall_domain_list_id,
               try(local.custom_domain_list_ids[rule.firewall_domain_list_name], null)
             )
@@ -85,6 +86,10 @@ resource "aws_route53_resolver_firewall_rule" "default" {
   block_response          = lookup(each.value, "block_response", null)
 
   firewall_domain_redirection_action = lookup(each.value, "firewall_domain_redirection_action", null)
+
+  # DNS Firewall Advanced rules
+  dns_threat_protection = lookup(each.value, "dns_threat_protection", null)
+  confidence_threshold  = lookup(each.value, "confidence_threshold", null)
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_query_log_config

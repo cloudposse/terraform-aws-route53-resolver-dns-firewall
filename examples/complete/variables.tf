@@ -54,6 +54,9 @@ variable "rule_groups_config" {
       firewall_domain_list_id   = optional(string)
       # INSPECT_REDIRECTION_DOMAIN (AWS default) or TRUST_REDIRECTION_DOMAIN
       firewall_domain_redirection_action = optional(string)
+      # DNS Firewall Advanced rules: DGA, DICTIONARY_DGA or DNS_TUNNELING, with LOW, MEDIUM or HIGH confidence
+      dns_threat_protection = optional(string)
+      confidence_threshold  = optional(string)
     }))
   }))
   description = <<-EOF

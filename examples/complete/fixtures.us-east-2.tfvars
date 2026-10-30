@@ -80,6 +80,13 @@ rule_groups_config = {
         block_override_dns_type   = "CNAME"
         block_override_domain     = "go-here.com"
         block_override_ttl        = 1
+      },
+      "alert-dns-tunneling" = {
+        # DNS Firewall Advanced rule: no domain list, matches DNS tunneling attempts instead
+        priority              = 300
+        action                = "ALERT"
+        dns_threat_protection = "DNS_TUNNELING"
+        confidence_threshold  = "HIGH"
       }
     }
   }
